@@ -164,4 +164,4 @@ async function listEvents(auth) {
   });
 }
 
-authorize().then(insertEvent).catch(console.error);
+authorize().then(listEvents).catch(console.error);
