@@ -30,7 +30,7 @@ function cleansingDatada(data) {
     .filter((d) => isTimePassed(d.assignment.due_at))
     .map((d) => {
       const obj = {
-        id: d.assignment.id,
+        assignment_id: d.assignment.id,
         summary: d.assignment.name,
         description: `${d.context_name}\n${d.assignment.html_url}`,
         start: {

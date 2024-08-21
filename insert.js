@@ -110,7 +110,12 @@ async function insertEvent(auth) {
     return canvasLms.cleansingDatada(value);
   });
 
-  const filteredEvents = events.filter((e) => registeredEvents.includes(e.id));
+  const filteredEvents =
+    registeredEvents.length === 0
+      ? events
+      : events.filter(
+          (e) => !registeredEvents.includes(String(e.assignment_id))
+        );
 
   if (filteredEvents.length === 0) {
     console.log("nothing todo");
@@ -119,7 +124,7 @@ async function insertEvent(auth) {
 
   const calendar = google.calendar({ version: "v3", auth });
 
-  events.map((event) =>
+  filteredEvents.map((event) => {
     calendar.events.insert(
       {
         auth: auth,
@@ -135,8 +140,8 @@ async function insertEvent(auth) {
         }
         console.log("Event created: %s", event.htmlLink);
       }
-    )
-  );
+    );
+  });
 }
 
 authorize().then(insertEvent).catch(console.error);
