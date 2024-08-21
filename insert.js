@@ -106,8 +106,11 @@ async function insertEvent(auth) {
   const event = {
     summary: "test",
     description: "test",
-    start: { dateTime: "2024-08-23T18:41:24+09:00", timeZone: "Asia/Tokyo" },
-    end: { dateTime: "2024-08-23T19:41:24+09:00", timeZone: "Asia/Tokyo" },
+    start: {
+      dateTime: "2024-08-21T23:30:00.000+09:00",
+      timeZone: "Asia/Tokyo",
+    },
+    end: { dateTime: "2024-08-21T23:30:00.000+09:00", timeZone: "Asia/Tokyo" },
     recurrence: [],
     attendees: [],
     reminders: {
@@ -161,4 +164,4 @@ async function listEvents(auth) {
   });
 }
 
-authorize().then(listEvents).catch(console.error);
+authorize().then(insertEvent).catch(console.error);
