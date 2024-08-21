@@ -53,6 +53,9 @@ async function getTodo() {
   return data;
 }
 
-getTodo().then(function (value) {
-  console.log("value", cleansingDatada(value));
-});
+// getTodo().then(function (value) {
+//   console.log("value", value);
+//   console.log("cleansingData", cleansingDatada(value));
+// });
+
+module.exports = { getTodo, cleansingDatada };

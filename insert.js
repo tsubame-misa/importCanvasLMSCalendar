@@ -3,6 +3,7 @@ const path = require("path");
 const process = require("process");
 const { authenticate } = require("@google-cloud/local-auth");
 const { google } = require("googleapis");
+const canvasLms = require("./canvasLms");
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
@@ -74,7 +75,7 @@ async function listEvents(auth) {
   const res = await calendar.events.list({
     calendarId: "primary",
     timeMin: new Date().toISOString(),
-    maxResults: 10,
+    maxResults: 3,
     singleEvents: true,
     orderBy: "startTime",
   });
@@ -83,14 +84,13 @@ async function listEvents(auth) {
     console.log("No upcoming events found.");
     return;
   }
+  console.log(events);
   console.log("Upcoming 10 events:");
-  events.map((event, i) => {
-    const start = event.start.dateTime || event.start.date;
-    console.log(`${start} - ${event.summary}`);
-  });
+  //   events.map((event, i) => {
+  //     const start = event.start.dateTime || event.start.date;
+  //     console.log(`${start} - ${event.summary}`);
+  //   });
 }
-
-// authorize().then(listEvents).catch(console.error);
 
 // Refer to the Node.js quickstart on how to setup the environment:
 // https://developers.google.com/calendar/quickstart/node
@@ -102,66 +102,31 @@ async function listEvents(auth) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 async function insertEvent(auth) {
-  const calendar = google.calendar({ version: "v3", auth });
-  const event = {
-    summary: "test",
-    description: "test",
-    start: {
-      dateTime: "2024-08-21T23:30:00.000+09:00",
-      timeZone: "Asia/Tokyo",
-    },
-    end: { dateTime: "2024-08-21T23:30:00.000+09:00", timeZone: "Asia/Tokyo" },
-    recurrence: [],
-    attendees: [],
-    reminders: {
-      useDefault: false,
-      overrides: [{ method: "popup", minutes: 10 }],
-    },
-  };
+  const events = await canvasLms.getTodo().then(function (value) {
+    return canvasLms.cleansingDatada(value);
+  });
 
-  calendar.events.insert(
-    {
-      auth: auth,
-      calendarId: "primary",
-      resource: event,
-    },
-    function (err, event) {
-      if (err) {
-        console.log(
-          "There was an error contacting the Calendar service: " + err
-        );
-        return;
+  const calendar = google.calendar({ version: "v3", auth });
+
+  events.map((event) =>
+    calendar.events.insert(
+      {
+        auth: auth,
+        calendarId: "primary",
+        resource: event,
+      },
+      function (err, event) {
+        if (err) {
+          console.log(
+            "There was an error contacting the Calendar service: " + err
+          );
+          return;
+        }
+        console.log("Event created: %s", event.htmlLink);
       }
-      console.log("Event created: %s", event.htmlLink);
-    }
+    )
   );
 }
 
-// authorize().then(insertEvent).catch(console.error);
-
-/**
- * Lists the next 10 events on the user's primary calendar.
- * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
- */
-async function listEvents(auth) {
-  const calendar = google.calendar({ version: "v3", auth });
-  const res = await calendar.events.list({
-    calendarId: "primary",
-    timeMin: new Date().toISOString(),
-    maxResults: 10,
-    singleEvents: true,
-    orderBy: "startTime",
-  });
-  const events = res.data.items;
-  if (!events || events.length === 0) {
-    console.log("No upcoming events found.");
-    return;
-  }
-  console.log("Upcoming 10 events:");
-  events.map((event, i) => {
-    const start = event.start.dateTime || event.start.date;
-    console.log(`${start} - ${event.summary}`);
-  });
-}
-
-authorize().then(listEvents).catch(console.error);
+authorize().then(insertEvent).catch(console.error);
+// authorize().then(listEvents).catch(console.error);
