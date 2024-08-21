@@ -70,26 +70,28 @@ async function authorize() {
  * Lists the next 10 events on the user's primary calendar.
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-async function listEvents(auth) {
+async function getRegisteredCanvasLmsEvents(auth) {
   const calendar = google.calendar({ version: "v3", auth });
+  const now = new Date();
   const res = await calendar.events.list({
     calendarId: "primary",
-    timeMin: new Date().toISOString(),
-    maxResults: 3,
+    timeMin: now.toISOString(),
+    timeMax: new Date(now.setMonth(now.getMonth() + 1)),
+    maxResults: 100,
     singleEvents: true,
     orderBy: "startTime",
   });
-  const events = res.data.items;
-  if (!events || events.length === 0) {
-    console.log("No upcoming events found.");
-    return;
-  }
-  console.log(events);
-  console.log("Upcoming 10 events:");
-  //   events.map((event, i) => {
-  //     const start = event.start.dateTime || event.start.date;
-  //     console.log(`${start} - ${event.summary}`);
-  //   });
+
+  const eventsIds = res.data.items
+    .map((e) => {
+      if (e.description) {
+        return canvasLms.getCanvasLmsTodoId(e.description);
+      }
+      return null;
+    })
+    .filter((id) => id);
+
+  return eventsIds;
 }
 
 // Refer to the Node.js quickstart on how to setup the environment:
@@ -102,9 +104,18 @@ async function listEvents(auth) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 async function insertEvent(auth) {
+  const registeredEvents = await getRegisteredCanvasLmsEvents(auth);
+  //まだ登録してないtodoだけ登録する
   const events = await canvasLms.getTodo().then(function (value) {
     return canvasLms.cleansingDatada(value);
   });
+
+  const filteredEvents = events.filter((e) => registeredEvents.includes(e.id));
+
+  if (filteredEvents.length === 0) {
+    console.log("nothing todo");
+    return;
+  }
 
   const calendar = google.calendar({ version: "v3", auth });
 
@@ -129,4 +140,3 @@ async function insertEvent(auth) {
 }
 
 authorize().then(insertEvent).catch(console.error);
-// authorize().then(listEvents).catch(console.error);

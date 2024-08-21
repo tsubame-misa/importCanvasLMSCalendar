@@ -1,3 +1,14 @@
+function getCanvasLmsTodoId(url) {
+  const regex =
+    /https:\/\/nu\.instructure\.com\/courses\/[^\/]+\/assignments\/([^\/]+)/;
+  const match = url.match(regex);
+  if (match && match[1]) {
+    return match[1];
+  } else {
+    return null; // マッチしなかった場合にnullを返す
+  }
+}
+
 function utc2jst(time) {
   const utcDate = new Date(time);
 
@@ -19,6 +30,7 @@ function cleansingDatada(data) {
     .filter((d) => isTimePassed(d.assignment.due_at))
     .map((d) => {
       const obj = {
+        id: d.assignment.id,
         summary: d.assignment.name,
         description: `${d.context_name}\n${d.assignment.html_url}`,
         start: {
@@ -53,9 +65,4 @@ async function getTodo() {
   return data;
 }
 
-// getTodo().then(function (value) {
-//   console.log("value", value);
-//   console.log("cleansingData", cleansingDatada(value));
-// });
-
-module.exports = { getTodo, cleansingDatada };
+module.exports = { getTodo, cleansingDatada, getCanvasLmsTodoId };
