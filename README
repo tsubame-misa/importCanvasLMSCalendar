@@ -5,3 +5,7 @@
 認証情報作成時はウェブアプリケーションを選択し、承認済みのリダイレクト URI に`http://localhost:3000/oauth2callback`を設定してください。
 
 また、`credentials.json`には` "redirect_uris": ["http://localhost:3000/oauth2callback"]` を追加してください。
+
+環境変数`CANVAS_LMS_TOKEN`にCanvasLMSのトークンを設定してください。
+
+`node insert.js`の実行でCanvasLMSにある直近１ヶ月の課題を自分のGoogleCalendarに登録することができます。
