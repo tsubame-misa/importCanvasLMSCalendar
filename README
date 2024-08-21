@@ -1,0 +1,7 @@
+## 初期設定
+
+[Node.js クイックスタート](https://developers.google.com/calendar/api/quickstart/nodejs?hl=ja) を参考に、`credentials.json`, `token.json`を設定してください。
+
+認証情報作成時はウェブアプリケーションを選択し、承認済みのリダイレクト URI に`http://localhost:3000/oauth2callback`を設定してください。
+
+また、`credentials.json`には` "redirect_uris": ["http://localhost:3000/oauth2callback"]` を追加してください。
