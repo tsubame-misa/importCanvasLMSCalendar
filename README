@@ -8,4 +8,11 @@
 
 環境変数`CANVAS_LMS_TOKEN`にCanvasLMSのトークンを設定してください。
 
+
+プロジェクトの作成
+
+Chrome Developer Dashboardにアップロード。keyをmanifestjsonに記入
+
+認証情報作成をchrome拡張機能で行う、拡張機能のIDを記載。clientIDをmanifestjsonに記入
+
 `node insert.js`の実行でCanvasLMSにある直近１ヶ月の課題を自分のGoogleCalendarに登録することができます。
