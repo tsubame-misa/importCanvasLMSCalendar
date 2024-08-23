@@ -1,0 +1,22 @@
+{
+  "name": "OAuth Sample",
+  "description": "Use OAuth in Extensions",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["identity"],
+  "oauth2": {
+    "client_id": "",
+    "scopes": ["https://www.googleapis.com/auth/calendar"]
+  },
+  "content_scripts": [
+    {
+      "js": ["sample.js"],
+      "matches": ["https://nu.instructure.com/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "key": ""
+}
