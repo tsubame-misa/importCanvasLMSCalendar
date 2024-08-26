@@ -67,7 +67,7 @@ chrome.storage.local.get(["time", "cnt", "autoUpdate"], (data) => {
 
 // カウントが更新されるたびに表示を更新する
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.time && changes.cnt) {
+  if (area === "local" && changes.time) {
     console.log(changes);
     document.getElementById("countDisplay").textContent =
       "最終更新: " +
