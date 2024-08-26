@@ -20,11 +20,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("start alerm");
     setDailyAlarm();
     sendResponse({ message: "Alarm started" });
+    chrome.storage.local.set({
+      autoUpdate: "ON",
+    });
   } else if (request.action === "stopAlarm") {
     // アラームを停止する
     console.log("stop alerm");
     chrome.alarms.clear("dailyAlarm");
     sendResponse({ message: "Alarm stopped" });
+    chrome.storage.local.set({
+      autoUpdate: "OFF",
+    });
   }
 });
 
@@ -48,11 +54,24 @@ function setDailyAlarm() {
 // アラームが発生した時にカウントを増やす
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "dailyAlarm") {
-    const now = new Date();
-    console.log("time: ", now.toLocaleString());
-
-    // カウントをストレージに保存する
-    chrome.storage.local.set({ time: now.toLocaleString() });
+    (async () => {
+      try {
+        const todoLength = await registerTodo();
+        const now = new Date();
+        console.log("time: ", now.toLocaleString(), todoLength);
+        // カウントをストレージに保存する
+        chrome.storage.local.set({
+          cnt: todoLength,
+          time: now.toLocaleString(),
+        });
+      } catch (e) {
+        // カウントをストレージに保存する
+        chrome.storage.local.set({
+          cnt: -1,
+          time: now.toLocaleString(),
+        });
+      }
+    })();
   }
 });
 
@@ -73,18 +92,26 @@ async function registerTodo() {
   console.log("filteredTodo", filteredTodo);
   if (filteredTodo.length === 0) {
     console.log("nothing todo");
-    return;
+    return filteredTodo.length;
   }
   filteredTodo.map((todo) => {
     insertTodo(todo).catch((e) => {
       console.log(e);
     });
   });
+  return filteredTodo.length;
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "registerTodo") {
-    registerTodo();
+    registerTodo()
+      .then((todoLength) => {
+        console.log(todoLength);
+        sendResponse({ message: todoLength });
+      })
+      .catch((e) => {
+        sendResponse({ message: -1 });
+      });
   }
   return true;
 });
