@@ -3,7 +3,7 @@
   "description": "Use OAuth in Extensions",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": ["identity"],
+  "permissions": ["identity", "alarms", "storage"],
   "host_permissions": ["https://www.googleapis.com/*"],
   "oauth2": {
     "client_id": "",
