@@ -1,6 +1,14 @@
+// 参照する既存の要素
+const referenceElement = document.getElementById("calendar_header");
+// 親要素
+const parentElement = referenceElement.parentNode;
+
+// 参照要素の次の兄弟要素を取得
+const nextSibling = referenceElement.nextElementSibling;
+
 // ボタンの作成
 const button = document.createElement("button");
-button.innerText = "登録";
+button.innerText = "カレンダーをインポートする";
 button.id = "register-button";
 
 // ボタンにクリックイベントを追加
@@ -14,40 +22,58 @@ button.addEventListener("click", () => {
   });
 });
 
-let target = document.querySelector("#content"); // 追加したい要素を見つけてくる
-target.appendChild(button); // 追加する
+// let target = document.querySelector("#content"); // 追加したい要素を見つけてくる
+// target.appendChild(button); // 追加する
 
 //////////
 
-const dayCheckButton = document.createElement("button");
-dayCheckButton.innerText = "定期実行を行う";
-dayCheckButton.id = "day-check-button";
-target.appendChild(dayCheckButton); // 追加する
-
-const cancelCheckButton = document.createElement("button");
-cancelCheckButton.innerText = "定期実行をキャンセルする";
-cancelCheckButton.id = "cancel-check-button";
-target.appendChild(cancelCheckButton); // 追加する
+const dailyButton = document.createElement("button");
+dailyButton.id = "day-check-button";
+dailyButton.innerText = "定期実行モードを実行する";
+dailyButton.value = false;
+// target.appendChild(dailyButton);
 
 const countDisplay = document.createElement("div");
 countDisplay.id = "countDisplay";
-target.appendChild(countDisplay); // 追加する
+countDisplay.hidden = true;
+// target.appendChild(countDisplay); // 追加する
+
+if (nextSibling) {
+  parentElement.insertBefore(button, nextSibling);
+  parentElement.insertBefore(dailyButton, nextSibling);
+  parentElement.insertBefore(countDisplay, nextSibling);
+} else {
+  parentElement.appendChild(button);
+  parentElement.insertBefore(dailyButton);
+  parentElement.insertBefore(countDisplay);
+}
 
 document.getElementById("day-check-button").addEventListener("click", () => {
-  console.log("start clicked");
-  chrome.runtime.sendMessage({ action: "startAlarm" }, (response) => {
-    console.log(response.message);
-  });
-});
-
-document.getElementById("cancel-check-button").addEventListener("click", () => {
-  console.log("stop clicked");
-  chrome.runtime.sendMessage({ action: "stopAlarm" }, (response) => {
-    console.log(response.message);
-  });
+  const dayCheckButtonElement = document.getElementById("day-check-button");
+  const countDisplayElement = document.getElementById("countDisplay");
+  if (dayCheckButtonElement.value === "false") {
+    console.log("start clicked");
+    chrome.runtime.sendMessage({ action: "startAlarm" }, (response) => {
+      console.log(response.message);
+    });
+    dayCheckButtonElement.innerText = "定期実行モード実行をキャンセル";
+    dayCheckButtonElement.value = true;
+    countDisplayElement.hidden = false;
+  } else if (dayCheckButtonElement.value === "true") {
+    console.log("stop clicked");
+    chrome.runtime.sendMessage({ action: "stopAlarm" }, (response) => {
+      console.log(response.message);
+    });
+    dayCheckButtonElement.innerText = "定期実行モードを実行する";
+    dayCheckButtonElement.value = false;
+    countDisplayElement.hidden = true;
+  }
 });
 
 function getStatusMessage(updateCnt) {
+  if (updateCnt === undefined) {
+    return "更新情報はありません";
+  }
   return updateCnt >= 0
     ? updateCnt + "件のtodoが新たに登録されました。"
     : "更新失敗。開発者に確認してください。";
@@ -55,26 +81,21 @@ function getStatusMessage(updateCnt) {
 
 // ストレージからカウントを取得して表示
 chrome.storage.local.get(["time", "cnt", "autoUpdate"], (data) => {
-  console.log(data);
   document.getElementById("countDisplay").textContent =
-    "最終更新: " +
-    (data.time || "-----") +
-    " " +
-    getStatusMessage(data.cnt) +
-    "autoUpdate:" +
-    data.autoUpdate;
+    "最終更新: " + (data.time || "-----") + " " + getStatusMessage(data.cnt);
 });
 
 // カウントが更新されるたびに表示を更新する
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.time) {
-    console.log(changes);
-    document.getElementById("countDisplay").textContent =
-      "最終更新: " +
-      changes.time.newValue +
-      " " +
-      getStatusMessage(changes.cnt.newValue) +
-      "autoUpdate:" +
-      changes.autoUpdate.newValue;
+    chrome.storage.local.get(["time", "cnt", "autoUpdate"], (data) => {
+      console.log(data);
+      document.getElementById("day-check-button").value = data.autoUpdate;
+      document.getElementById("countDisplay").textContent =
+        "最終更新: " +
+        (data.time || "-----") +
+        " " +
+        getStatusMessage(data.cnt);
+    });
   }
 });

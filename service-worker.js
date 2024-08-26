@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     setDailyAlarm();
     sendResponse({ message: "Alarm started" });
     chrome.storage.local.set({
-      autoUpdate: "ON",
+      autoUpdate: true,
     });
   } else if (request.action === "stopAlarm") {
     // アラームを停止する
@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.alarms.clear("dailyAlarm");
     sendResponse({ message: "Alarm stopped" });
     chrome.storage.local.set({
-      autoUpdate: "OFF",
+      autoUpdate: false,
     });
   }
 });
