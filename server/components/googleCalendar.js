@@ -10,48 +10,57 @@ function createUserEventsURL() {
   return `${USER_EVENTS}?maxResults=100&orderBy=startTime&q=${CANVAS_LMS}&singleEvents=true&timeMin=${now_string}&timeMax=${nextMonth.toISOString()}&`;
 }
 
-export function getUserEvents(sendResponse) {
-  chrome.identity.getAuthToken({ interactive: true }, function (token) {
-    if (chrome.runtime.lastError || !token) {
-      console.error("Failed to get auth token:", chrome.runtime.lastError);
-      return;
-    }
-    fetch(createUserEventsURL(), {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        sendResponse({ data: data.items });
+export function getUserEvents() {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      if (chrome.runtime.lastError || !token) {
+        console.error("Failed to get auth token:", chrome.runtime.lastError);
+        return;
+      }
+      fetch(createUserEventsURL(), {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
       })
-      .catch((error) => console.error("Error:", error));
+        .then((response) => response.json())
+        .then((data) => {
+          resolve({ data: data.items });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          reject(error);
+        });
+    });
   });
 }
 
 export function insertTodo(data) {
-  chrome.identity.getAuthToken({ interactive: true }, function (token) {
-    if (chrome.runtime.lastError || !token) {
-      console.error("Failed to get auth token:", chrome.runtime.lastError);
-      return;
-    }
-    fetch(USER_EVENTS, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-        ContentType: "application/json",
-      },
-      body: JSON.stringify(data),
-      mode: "cors",
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return "success";
-        } else {
-          new Error("failed insert event", response);
-        }
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: true }, function (token) {
+      if (chrome.runtime.lastError || !token) {
+        console.error("Failed to get auth token:", chrome.runtime.lastError);
+        return;
+      }
+      fetch(USER_EVENTS, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          ContentType: "application/json",
+        },
+        body: JSON.stringify(data),
+        mode: "cors",
       })
-      .catch((error) => console.error("Error:", error));
+        .then((response) => {
+          if (response.status === 200) {
+            return resolve("success");
+          } else {
+            new Error("failed insert event", response);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          reject(error);
+        });
+    });
   });
 }
